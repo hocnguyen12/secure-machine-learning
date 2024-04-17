@@ -1,13 +1,10 @@
 import tenseal as ts
 import torch
-from torchvision import datasets
-from torchvision import transforms, datasets
+from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 import numpy as np
 import time
-
-
-
+from tqdm import tqdm  # Make sure to import tqdm
 
 class ConvNet(torch.nn.Module):
     def __init__(self, hidden=128, output=2):
@@ -28,9 +25,6 @@ class ConvNet(torch.nn.Module):
         x = x.pow(2)  # Squaring activation again
         x = self.fc2(x)
         return x
-
-
-
     
 class EncConvNet:
     def __init__(self, torch_nn):
@@ -46,7 +40,6 @@ class EncConvNet:
         self.fc2_weight = torch_nn.fc2.weight.T.data.tolist()
         self.fc2_bias = torch_nn.fc2.bias.data.tolist()
         
-        
     def forward(self, enc_x, windows_nb):
         # conv layer
         enc_channels = []
@@ -54,39 +47,29 @@ class EncConvNet:
             y = enc_x.conv2d_im2col(kernel, windows_nb) + bias
             enc_channels.append(y)
         
-        
-        
         # pack all channels into a single flattened vector
         enc_x = ts.CKKSVector.pack_vectors(enc_channels)
         # square activation
         enc_x.square_()
         # fc1 layer
-        
         enc_x = enc_x.mm(self.fc1_weight) + self.fc1_bias
-        
-        
         # square activation
         enc_x.square_()
         enc_x = enc_x.mm(self.fc2_weight) + self.fc2_bias
-        
         return enc_x
     
     def __call__(self, *args, **kwargs):
         return self.forward(*args, **kwargs)
-
-
-    
-from tqdm import tqdm  # Assurez-vous d'importer tqdm
 
 def enc_test(context, model, test_loader, criterion, kernel_shape, stride):
     test_loss = 0.0
     class_correct = list(0. for i in range(2))  # Assume 2 classes
     class_total = list(0. for i in range(2))
     
-    # Initialisation du compteur
+    # Counter initialization
     cnt = 0
     
-    # Modification ici: Ajout de tqdm autour de test_loader pour la barre de chargement
+    # Modification here: Adding tqdm around test_loader for progress bar
     for data, target in tqdm(test_loader, desc='Testing progress', total=min(250, len(test_loader))):
         # Encoding and encryption
         x_enc, windows_nb = ts.im2col_encoding(
@@ -125,12 +108,9 @@ def enc_test(context, model, test_loader, criterion, kernel_shape, stride):
     print(f'\nOverall Test Accuracy: {overall_accuracy:.2f}% ({sum(class_correct)}/{sum(class_total)})')
     return overall_accuracy
 
-
-
-
 def test(model, test_loader, criterion):
     test_loss = 0.0
-    class_correct = list(0. for i in range(2))  # Assurez-vous que cela correspond au nombre de classes (2 pour chiens et chats)
+    class_correct = list(0. for i in range(2))  # Make sure this matches the number of classes (2 for dogs and cats)
     class_total = list(0. for i in range(2))
 
     model.eval()
@@ -145,7 +125,7 @@ def test(model, test_loader, criterion):
         correct = np.squeeze(pred.eq(target.data.view_as(pred)))
 
         for i in range(len(target)):
-            label = target.data[i].item()  # Utiliser .item() pour obtenir un scalaire
+            label = target.data[i].item()  # Use .item() to get a scalar
             class_correct[label] += correct.item() if correct.dim() == 0 else correct[i].item()
             class_total[label] += 1
 
@@ -160,10 +140,8 @@ def test(model, test_loader, criterion):
 
     print(f'\nTest Accuracy (Overall): {100 * sum(class_correct) / sum(class_total):.2f}% ({sum(class_correct)}/{sum(class_total)})')
 
-
-
 def train(model, train_loader, criterion, optimizer, n_epochs):
-        # model in training mode
+    # model in training mode
     model.train()
     for epoch in range(1, n_epochs+1):
 
@@ -185,21 +163,18 @@ def train(model, train_loader, criterion, optimizer, n_epochs):
     model.eval()
     return model
 
-
-
 if __name__ == "__main__":
-
     transform = transforms.Compose([
-    transforms.Grayscale(num_output_channels=1),
-    transforms.Resize((28,28)),
-    transforms.ToTensor(),
+        transforms.Grayscale(num_output_channels=1),
+        transforms.Resize((28,28)),
+        transforms.ToTensor(),
     ])
 
-    # Chargement des données de chiens et de chats
+    # Load dogs and cats data
     train_data = datasets.ImageFolder(root='your_path_of_training_set', transform=transform)
     test_data = datasets.ImageFolder(root='your_path_of_test_set', transform=transform)
     print(train_data.class_to_idx)
-    # Création des DataLoader
+    # Create DataLoaders
     batch_size = 512
     train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
     test_loader = DataLoader(test_data, batch_size=1, shuffle=True)
@@ -239,7 +214,7 @@ if __name__ == "__main__":
     context.generate_galois_keys()
 
     enc_model = EncConvNet(model)
-    print("Entrée dans enc_test")
+    print("Entering enc_test")
     start = time.time()
     enc_test(context, enc_model, test_loader, criterion, kernel_shape, stride)
     end = time.time()
