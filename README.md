@@ -20,3 +20,8 @@ The details on the models can be found inside the doc in "Rapport_Apprentissage_
 
 ## Demo
 
+To execute the web demo, you need to install streamlit ```pip install streamlit```
+
+After installing it you can launch it with this command :
+```streamlit run demo/demo.py```
+
