@@ -12,6 +12,67 @@ import time
 
 
 
+class FullyConnectedNet(torch.nn.Module):
+    def __init__(self, input_size=28*28, hidden=64, output=2):
+        super(FullyConnectedNet, self).__init__()
+        self.fc1 = torch.nn.Linear(input_size, 1024)
+        self.fc2 = torch.nn.Linear(1024, hidden)
+        self.fc3 = torch.nn.Linear(hidden, output)
+
+    def forward(self, x):
+        x = x.view(-1, 28)
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+
+
+class EncFullyConnectedNet: 
+    def __init__(self, torch_nn):
+        # Initialisation avec les poids et les biais du modèle en clair convertis en listes
+        self.fc1_weight = torch_nn.fc1.weight.T.data.tolist()
+        self.fc1_bias = torch_nn.fc1.bias.data.tolist()
+        
+        self.fc2_weight = torch_nn.fc2.weight.T.data.tolist()
+        self.fc2_bias = torch_nn.fc2.bias.data.tolist()
+        
+        self.fc3_weight = torch_nn.fc3.weight.T.data.tolist()
+        self.fc3_bias = torch_nn.fc3.bias.data.tolist()
+        
+        
+    def forward(self, enc_x):
+        # Évaluation du modèle sur des données chiffrées
+        #start = time.time()
+        enc_x = enc_x.mm(self.fc1_weight) + self.fc1_bias
+        #end = time.time()
+        #print("fc1 takes", end - start)
+        
+        # square activation
+        #start = time.time()
+        enc_x.square_()
+        #end = time.time()
+        #print("square activation takes", end - start)
+        
+        # fc2 layer
+        #start = time.time()
+        enc_x = enc_x.mm(self.fc2_weight) + self.fc2_bias
+        #end = time.time()
+        #print("fc2 takes", end - start)
+        
+        #start = time.time()
+        enc_x.square_()
+        #end = time.time()
+        #print("square activation takes", end - start)
+        
+        # fc3 layer
+        #start = time.time()
+        enc_x = enc_x.mm(self.fc3_weight) + self.fc3_bias
+        #end = time.time()
+        #print("fc3 takes", end - start)
+        return enc_x
+    
+    def __call__(self, *args, **kwargs):
+        return self.forward(*args, **kwargs)
 
 
 def show_probabilities(prob_cat, prob_dog):
@@ -232,6 +293,38 @@ def predict_enc_cnn(image_path, model, context):
     predicted_class = np.argmax(output)
     probabilities = F.softmax(output_tensor, dim=1)
     return probabilities,predicted_class
+
+def predict_enc_fccnn(image_path, enc_model, context):
+    # Assurez-vous que les transformations correspondent aux attentes du modèle
+    transform = transforms.Compose([
+        transforms.Grayscale(num_output_channels=1),
+        transforms.Resize((28, 28)),  # Ou toute autre taille attendue par votre modèle
+        transforms.ToTensor(),
+        transforms.Normalize([0.4584], [0.2492]),  # Utilisez les moyennes et écarts-types appropriés
+    ])
+    
+    # Chargement et transformation de l'image
+    image = Image.open(image_path)
+    transformed_image = transform(image).unsqueeze(0)  # Ajoute une dimension pour le batch
+    flat_image = transformed_image.view(-1).tolist()  # Conversion en liste pour le chiffrement
+
+    # Chiffrement de l'image
+    enc_image = ts.ckks_vector(context, flat_image)
+
+    # Prédiction avec le modèle chiffré
+    enc_output = enc_model(enc_image)
+
+    # Décryptage et interprétation du résultat
+    output_decrypted = enc_output.decrypt()
+    output_tensor = torch.tensor(output_decrypted).view(1, -1)
+    probabilities = torch.softmax(output_tensor, dim=1)
+    predicted_class = torch.argmax(probabilities, dim=1).item()
+    prob_cat = probabilities[0][0].item()
+    prob_dog = probabilities[0][1].item()
+
+    return prob_cat, prob_dog, predicted_class
+
+
     
 
 
@@ -245,9 +338,11 @@ def main():
     context.global_scale = pow(2, 26)
     context.generate_galois_keys()
     model = torch.load("complete_model_64.pth")
+    model2 = torch.load("model_full_clair.pth")
     model.eval()
+    model2.eval()
     enc_model = EncConvNet(model)
-    
+    enc2_model = EncFullyConnectedNet(model2)
     st.title('Démo de détection de chat ou de chien sur des images chiffrées')
     uploaded_file = st.file_uploader("Choisir une image de chat ou de chien", type=["jpg", "png"])
     if uploaded_file:
@@ -257,10 +352,10 @@ def main():
 
         image = Image.open(uploaded_file)
         st.image(image, use_column_width=True)
-        chiffrement = st.selectbox('Choisir le chiffrement', ['pas de chiffrement', 'EncCNN'])
+        chiffrement = st.selectbox('Choisir le chiffrement', ['pas de chiffrement', 'EncCNN','ENCFCNN'])
 
         if chiffrement == 'EncCNN':
-            if st.button('Prédire avec ENcCNN'):
+            if st.button('Prédire avec EncCNN'):
                 start = time.time()
                 probabilities, predicted_class = predict_enc_cnn(tmp_path, enc_model,context)
                 if predicted_class == 0:
@@ -279,11 +374,26 @@ def main():
         elif chiffrement == 'pas de chiffrement':
             if st.button('Prédire sans chiffrement'):
                 start = time.time()
-                predict_and_display(image, 'modele_clair.h5', 'tf')
+                predict_and_display(image, 'demo/modele_clair.h5', 'tf')
                 end = time.time()
                 execution_time = end - start
                 execution_time_rounded = round(execution_time, 1)
                 st.write("Temps d'exécution de la prédiction en secondes :", execution_time_rounded)
+        elif chiffrement == 'ENCFCNN':
+            if st.button('Prédire avec EncFCNN'):
+                start = time.time()
+                # Suppose que `predict_enc_fccnn` est une fonction que vous définissez pour gérer
+                # la logique spécifique de prédiction avec ENCFCNN, incluant le chiffrement de l'image
+                prob_cat,prob_dog, predicted_class = predict_enc_fccnn(tmp_path, enc2_model, context)
+                if predicted_class == 0:
+                    st.write('C\'est probablement un **chat** 🐱')
+                else:
+                    st.write('C\'est probablement un **chien** 🐶')
+                show_probabilities(prob_cat, prob_dog)
+                show_jauge(prob_cat, prob_dog)
+                end = time.time()
+                execution_time = end - start
+                st.write("Temps d'exécution de la prédiction :", execution_time, "secondes")
 
 
 
