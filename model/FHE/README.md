@@ -1,11 +1,10 @@
-# Projet de 2eme Annee ENSICAEN
-**Cecile LU, Paul NGUYEN, Zeyd BOUMAHDI, Anis AHMED-ZAID, Noura OUTLIOUA**
+# FHE model using HELayers IBM toolkit
 
 contact : paul.nguyen@ecole.ensicaen.fr
 
 Our project involves performing prediction tasks on encrypted data. To do this, we need to teach our model to recognize numerical images.
 
-This branch contains :
+This directory contains :
 - cnn_cats_dogs.py : loads dataset, creates and trains our model for later encryption with helayers
 - encrypt_cats_dogs.py : loads and encrypts model, loads and encrypts test images, perform encrypted predictions
 - activations.py : layers for our neural network
