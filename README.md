@@ -1,8 +1,11 @@
-# Second Year Project at ENSICAEN engineering school
+# Second Year ENSICAEN Project 
+
+This is a research project conducted throughout the second year at the ENSICAEN National Engineering School of Caen
 
 Students : **Cecile LU, Paul NGUYEN, Zeyd BOUMAHDI, Anis AHMEDZAID, Noura OUTLIOUA**
+Supervisors: **Christophe ROSENBERGER, Tanguy GERNOT**
 
-Our project involves performing prediction tasks on encrypted data. To achieve this, we aim to train our models to recognize numerical images. For further details please refer to the documents in the /doc directory.
+Our project involves performing machine learning/prediction tasks on encrypted data. To achieve this, we aim to train our models to recognize numerical images. For further details please refer to the documents in the ```/doc``` directory.
 
 ## Models
 
@@ -24,4 +27,3 @@ To execute the web demo, you need to install streamlit ```pip install streamlit`
 
 After installing it you can launch it with this command :
 ```streamlit run demo/demo.py```
-
