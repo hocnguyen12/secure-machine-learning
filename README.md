@@ -1,13 +1,17 @@
 # Second Year ENSICAEN Project 
-
-This is a research project conducted throughout the second year at the ENSICAEN National Engineering School of Caen
-
 Students : **Cecile LU, Paul NGUYEN, Zeyd BOUMAHDI, Anis AHMEDZAID, Noura OUTLIOUA**
 Supervisors: **Christophe ROSENBERGER, Tanguy GERNOT**
 
+This is a research project conducted throughout the second year at the ENSICAEN National Engineering School of Caen.
+
 Our project involves performing machine learning/prediction tasks on encrypted data. To achieve this, we aim to train our models to recognize numerical images. For further details please refer to the documents in the ```/doc``` directory.
 
-The ```/doc``` directory also contains a state of the art article on the topic of Machhine Learning over Encrypted Data
+The ```/doc``` directory also contains a state of the art article on the topic of Machhine Learning over Encrypted Data.
+
+## Personal Contribution
+I personally developped a CNN model based on the ```HELayers``` toolkit by IBM.
+
+Instructions and details are given in the ```/model/FHE``` directory.
 
 ## Models
 
@@ -16,7 +20,7 @@ The details on the models can be found inside the doc in "Rapport_Apprentissage_
 - **EncCNN**: This model is based on Convolutional Neural Networks (CNNs) and is designed to operate on encrypted data.
 - **EncFCNN**: This model is a variant of Fully Convolutional Neural Networks (FCNNs) adapted for encrypted data.
 - **FHE**: Fully Homomorphic Encryption (FHE) is a cryptographic technique that enables computations on encrypted data without decryption.
-
+  
 ## Documentation
 
 - **kick_off**: This document outlines the initial plans, objectives, and timeline for the project.
