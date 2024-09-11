@@ -7,6 +7,8 @@ Supervisors: **Christophe ROSENBERGER, Tanguy GERNOT**
 
 Our project involves performing machine learning/prediction tasks on encrypted data. To achieve this, we aim to train our models to recognize numerical images. For further details please refer to the documents in the ```/doc``` directory.
 
+The ```/doc``` directory also contains a state of the art article on the topic of Machhine Learning over Encrypted Data
+
 ## Models
 
 The details on the models can be found inside the doc in "Rapport_Apprentissage_Securise"
