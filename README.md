@@ -11,7 +11,7 @@ The ```/doc``` directory also contains a state of the art article on the topic o
 ## Personal Contribution
 I personally developped a CNN model based on the ```HELayers``` toolkit by IBM.
 
-Instructions and details are given in the ```/model/FHE``` directory.
+Instructions and details are given in ```./model/FHE/README.md```.
 
 ## Models
 
