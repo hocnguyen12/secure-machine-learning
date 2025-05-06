@@ -47,13 +47,13 @@ details :
 ### CNN + HElayers
 
 #### cnn_cats_dogs.py
-this program creates a model and trains it, using fhe encryption limits our model capacities because fhe does notsupport MaxPooling2D and Dropout layers
+this program creates a model and trains it, using fhe encryption limits our model capacities because `FHE` does notsupport MaxPooling2D and Dropout layers
 
 ```bash
 RuntimeError: Neural network architecture initialization from JSON failed: Neural network initialization from JSON encountered an operator type that is currently not supported: MaxPooling2D
 ```
 
-this is because fhe only supports additions and products but not max(), this limits greatly our model's performances
+this is because `FHE` only supports additions and products but not max(), this greatly limits our model's performances
 
 first prediction :
 ```bash
